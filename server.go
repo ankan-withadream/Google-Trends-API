@@ -6,6 +6,7 @@ import (
 
 	"google-trends-api/internal/config"
 	"google-trends-api/src/routers"
+	"google-trends-api/src/services"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 		ReadTimeout:  config.APP_CONFIG.ReadTimeout,
 		WriteTimeout: config.APP_CONFIG.WriteTimeout,
 	}
+
+	services.ExtractGoogleTrends()
 
 	go func() {
 

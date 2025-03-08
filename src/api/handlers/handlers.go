@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"google-trends-api/src/services"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,4 +58,15 @@ func Handle_kigo(c *gin.Context) {
 	// 	c.JSON(http.StatusOK, resp)
 
 	// }
+}
+
+func GetGoogleTrends(c *gin.Context) {
+	// services.ExportGoogleTrends()
+	// data := services.ExtractGoogleTrends()
+	// c.Writer.Write([]byte("Google Trends exported"))
+	data := services.RawData
+	fmt.Println("Google Trends exported", data)
+	c.JSON(http.StatusOK, gin.H{
+		"message": data,
+	})
 }
