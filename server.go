@@ -27,6 +27,7 @@ func main() {
 	}
 
 	services.ExtractGoogleTrends()
+	services.SanitizeHTML()
 
 	go func() {
 

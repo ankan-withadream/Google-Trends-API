@@ -64,7 +64,7 @@ func GetGoogleTrends(c *gin.Context) {
 	// services.ExportGoogleTrends()
 	// data := services.ExtractGoogleTrends()
 	// c.Writer.Write([]byte("Google Trends exported"))
-	data := services.RawData
+	data := services.SanitizedData
 	fmt.Println("Google Trends exported", data)
 	c.JSON(http.StatusOK, gin.H{
 		"message": data,

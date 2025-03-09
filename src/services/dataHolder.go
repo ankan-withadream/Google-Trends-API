@@ -7,3 +7,5 @@ import (
 var Data []models.Trends
 
 var RawData string
+
+var SanitizedData string
