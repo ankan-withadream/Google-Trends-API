@@ -23,8 +23,6 @@ func ExtractGoogleTrends() {
 
 	// Wait for the page to load
 	page.MustWaitStable()
-	// sleep for 10 seconds
-	time.Sleep(5 * time.Second)
 
 	fmt.Println("page stable")
 
@@ -65,6 +63,7 @@ func ExtractGoogleTrends() {
 	tableBody := page.MustElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[1]/table/tbody[2]`)
 	rawExtractedData := tableBody.MustText()
 	RawData = rawExtractedData
+	RawHTML = tableBody.MustHTML()
 }
 
 func ExportGoogleTrends() {

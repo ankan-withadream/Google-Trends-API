@@ -3,125 +3,48 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"google-trends-api/src/api/models"
 
 	// "google-trends-api/src/services"
 	"strings"
 )
 
-type TrendingItem struct {
-	Title        string   `json:"title"`
-	Views        string   `json:"views,omitempty"`
-	Direction    string   `json:"direction,omitempty"`
-	Percentage   string   `json:"percentage,omitempty"`
-	TimeAgo      string   `json:"time_ago,omitempty"`
-	Status       string   `json:"status,omitempty"`
-	State        string   `json:"state,omitempty"`
-	MoreCount    string   `json:"more_count,omitempty"`
-	RelatedTerms []string `json:"related_terms,omitempty"`
-}
-
 func SanitizeHTML() {
-	htmlContent := RawData
-	lines := strings.Split(htmlContent, "\n")
-	var items []TrendingItem
-	var currentItem TrendingItem
-	var relatedTerms []string
+	htmlContent := RawHTML
+	table_rows := strings.SplitN(htmlContent, "</tr>", -1)
+	fmt.Println("Rows: ", len(table_rows))
+	items := []models.TrendingItem{}
+	// var relatedTerms []string
 
-	for i := 0; i < len(lines); i++ {
-		line := strings.TrimSpace(lines[i])
-		if line == "" || line == "\t" {
-			continue
-		}
+	for i := 0; i < len(table_rows)-1; i++ {
+		row := table_rows[i]
+		var currentItem models.TrendingItem
+		table_datas := strings.SplitN(row, "</td>", 5)
 
-		// If we find a line that contains "+" and "more", it's the more count
-		if strings.Contains(line, "+") && strings.Contains(line, "more") {
-			currentItem.MoreCount = line
-			if len(relatedTerms) > 0 {
-				currentItem.RelatedTerms = make([]string, len(relatedTerms))
-				copy(currentItem.RelatedTerms, relatedTerms)
-				relatedTerms = []string{}
-			}
-			items = append(items, currentItem)
-			currentItem = TrendingItem{}
-			continue
-		}
+		// div1 holidng keyword and search voulme
+		div1 := table_datas[1]
+		div1 = strings.Replace(div1, "</div", "", -1)
+		div1Slices := strings.SplitN(div1, ">", -1)
+		// div2 holding search volume increase
+		div2 := table_datas[2]
+		div2 = strings.Replace(div2, "</div", "", -1)
+		div2Slices := strings.SplitN(div2, ">", -1)
+		// div3 holding started from now and active lasted
+		div3 := table_datas[3]
+		div3 = strings.Replace(div3, "</div", "", -1)
+		div3Slices := strings.SplitN(div3, ">", -1)
 
-		// If we have a number followed by "+" (like "10M+", "100K+"), it's the views
-		if strings.HasSuffix(line, "+") && currentItem.Views == "" {
-			currentItem.Views = line
-			continue
-		}
+		currentItem.Keyword = div1Slices[2]
+		currentItem.SearchVolume = div1Slices[6]
+		currentItem.SearchVolumeIncrease = div2Slices[8]
+		currentItem.StartedFromNow = div3Slices[2]
+		currentItem.ActiveLasted = div1Slices[14]
 
-		// Check for direction indicators
-		if line == "arrow_upward" {
-			currentItem.Direction = line
-			continue
-		}
-
-		// Check for percentage
-		if strings.HasSuffix(line, "%") {
-			currentItem.Percentage = line
-			continue
-		}
-
-		// Check for time ago
-		if strings.Contains(line, "hours ago") || strings.Contains(line, "hour ago") {
-			currentItem.TimeAgo = line
-			continue
-		}
-
-		// Check for status
-		if line == "trending_up" || line == "timelapse" {
-			currentItem.Status = line
-			continue
-		}
-
-		// Check for state
-		if line == "Active" || strings.HasPrefix(line, "Lasted") {
-			currentItem.State = line
-			continue
-		}
-
-		// If we have a complete item but no more_count, this might be a related term
-		if currentItem.Title != "" && currentItem.Views != "" && currentItem.MoreCount == "" {
-			if !strings.HasSuffix(line, "+") && !strings.HasSuffix(line, "%") &&
-				line != "arrow_upward" && line != "trending_up" &&
-				line != "timelapse" && line != "Active" &&
-				!strings.Contains(line, "hour") {
-				relatedTerms = append(relatedTerms, line)
-				continue
-			}
-		}
-
-		// If we have an empty title, this must be the title
-		if currentItem.Title == "" {
-			currentItem.Title = line
-			continue
-		}
-
-		// If we get here and have a title, we're starting a new item
-		if currentItem.Title != "" {
-			// If we have related terms but no more_count, add them before resetting
-			if len(relatedTerms) > 0 && currentItem.MoreCount == "" {
-				currentItem.RelatedTerms = make([]string, len(relatedTerms))
-				copy(currentItem.RelatedTerms, relatedTerms)
-				relatedTerms = []string{}
-			}
-			items = append(items, currentItem)
-			currentItem = TrendingItem{Title: line}
-		}
-	}
-
-	// Add the last item if it exists
-	if currentItem.Title != "" {
-		if len(relatedTerms) > 0 {
-			currentItem.RelatedTerms = make([]string, len(relatedTerms))
-			copy(currentItem.RelatedTerms, relatedTerms)
-		}
 		items = append(items, currentItem)
 	}
+	fmt.Println("Items: ", items)
 
-	jsonBytes, err := json.MarshalIndent(items, "", "  ")
+	jsonBytes, err := json.Marshal(items)
 	if err != nil {
 		// return "", err
 		fmt.Println("Error: ", err)
@@ -129,30 +52,3 @@ func SanitizeHTML() {
 
 	SanitizedData = string(jsonBytes)
 }
-
-// func main() {
-// 	// Read input from stdin if no file is specified
-// 	var input []byte
-// 	var err error
-
-// 	if len(os.Args) > 1 {
-// 		// Read from file if provided
-// 		input, err = ioutil.ReadFile(os.Args[1])
-// 	} else {
-// 		// Read from stdin
-// 		input, err = ioutil.ReadAll(os.Stdin)
-// 	}
-
-// 	if err != nil {
-// 		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
-// 		os.Exit(1)
-// 	}
-
-// 	jsonOutput, err := sanitizeHTML(string(input))
-// 	if err != nil {
-// 		fmt.Fprintf(os.Stderr, "Error processing HTML: %v\n", err)
-// 		os.Exit(1)
-// 	}
-
-// 	fmt.Println(jsonOutput)
-// }
