@@ -6,8 +6,3 @@ import (
 
 var Data []models.TrendingItem
 
-var RawData string
-
-var SanitizedData string
-
-var RawHTML string

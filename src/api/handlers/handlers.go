@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"google-trends-api/src/services"
 
@@ -65,16 +64,12 @@ func GetGoogleTrends(c *gin.Context) {
 	// services.ExportGoogleTrends()
 	// data := services.ExtractGoogleTrends()
 	// c.Writer.Write([]byte("Google Trends exported"))
-	data := services.SanitizedData
+	data := services.Data
 	// data := services.RawData
 	// data := services.RawHTML
 	fmt.Println("Google Trends exported", data)
-	err := os.WriteFile("test.txt", []byte(services.RawHTML), 0644)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": data,
+		"data": data,
 	})
 }

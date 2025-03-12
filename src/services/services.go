@@ -9,7 +9,20 @@ import (
 	// "github.com/go-rod/rod/lib/input"
 	// "github.com/go-rod/rod/lib/proto"
 	"github.com/go-rod/rod/lib/utils"
+	"github.com/robfig/cron/v3"
 )
+
+func AutoScrap() {
+
+	c := cron.New()
+	c.AddFunc("@every 10m", func() { ExtractGoogleTrends() })
+	c.Start()
+	// for {
+	// fmt.Println("Auto Scraping Google Trends")
+	// ExtractGoogleTrends()
+	// time.Sleep(1 * time.Minute)
+	// }
+}
 
 func ExtractGoogleTrends() {
 	fmt.Println("Extracting Google Trends")
@@ -59,11 +72,25 @@ func ExtractGoogleTrends() {
 
 	// page.MustElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div/ul/li[3]`).MustClick()
 	// fmt.Println("page expanded")
-	// Copy the table body
-	tableBody := page.MustElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[1]/table/tbody[2]`)
-	rawExtractedData := tableBody.MustText()
-	RawData = rawExtractedData
-	RawHTML = tableBody.MustHTML()
+	nextPageButton := page.MustElementX(`//*[@id="trend-table"]/div[2]/div/div[2]/span[3]/button`)
+	// nextPageButtonDisabled := page.MustElementX(`//*[@id="trend-table"]/div[2]/div/div[2]/span[3]/button[@disabled]`)
+	var allData string
+	ifdisabled := nextPageButton.MustAttribute("disabled")
+	for ifdisabled == nil {
+		fmt.Println("next page button not disabled")
+		// Copy the table body
+		tableBody := page.MustElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[1]/table/tbody[2]`)
+
+		// RawHTML = tableBody.MustHTML()
+		allData += tableBody.MustHTML()
+
+		nextPageButton.MustClick()
+		fmt.Println("next page button clicked")
+		page.MustWaitLoad()
+		ifdisabled = nextPageButton.MustAttribute("disabled")
+	}
+	fmt.Println("All data: ", allData)
+	sanitizeHTML(allData)
 }
 
 func ExportGoogleTrends() {

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"google-trends-api/src/api/models"
 
@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func SanitizeHTML() {
-	htmlContent := RawHTML
-	table_rows := strings.SplitN(htmlContent, "</tr>", -1)
+func sanitizeHTML(rawhtml string) {
+	// htmlContent := RawHTML
+	table_rows := strings.SplitN(rawhtml, "</tr>", -1)
 	fmt.Println("Rows: ", len(table_rows))
 	items := []models.TrendingItem{}
 	// var relatedTerms []string
@@ -43,12 +43,12 @@ func SanitizeHTML() {
 		items = append(items, currentItem)
 	}
 	fmt.Println("Items: ", items)
+	Data = append(Data, items...)
+	// jsonBytes, err := json.Marshal(items)
+	// if err != nil {
+	// 	// return "", err
+	// 	fmt.Println("Error: ", err)
+	// }
 
-	jsonBytes, err := json.Marshal(items)
-	if err != nil {
-		// return "", err
-		fmt.Println("Error: ", err)
-	}
-
-	SanitizedData = string(jsonBytes)
+	// SanitizedData = string(jsonBytes)
 }

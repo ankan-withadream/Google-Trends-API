@@ -26,8 +26,7 @@ func main() {
 		WriteTimeout: config.APP_CONFIG.WriteTimeout,
 	}
 
-	services.ExtractGoogleTrends()
-	services.SanitizeHTML()
+	services.AutoScrap()
 
 	go func() {
 
