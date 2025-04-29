@@ -10,6 +10,8 @@ import (
 	// "github.com/go-rod/rod/lib/proto"
 	"github.com/go-rod/rod/lib/utils"
 	"github.com/robfig/cron/v3"
+
+	"google-trends-api/internal/config"
 )
 
 func AutoScrap() {
@@ -32,7 +34,7 @@ func ExtractGoogleTrends() {
 	defer browser.MustClose()
 
 	// Create a new page
-	page := browser.MustPage("https://trends.google.com/trending")
+	page := browser.MustPage(config.GOOGLE_TRENDS_BASE_URL)
 
 	// Wait for the page to load
 	page.MustWaitStable()
