@@ -79,6 +79,8 @@ func scrapeData(url string, countryName string, regionName string) {
 			break
 		}
 
+		var tableBody *rod.Element
+
 		// --- Check if Button is Disabled ---
 		isDisabledAttr, err := nextPageButton.Attribute("disabled")
 		if err != nil {
@@ -89,6 +91,30 @@ func scrapeData(url string, countryName string, regionName string) {
 		// Check if the attribute exists and is not nil (meaning it's disabled)
 		if isDisabledAttr != nil {
 			fmt.Println("Next page button is disabled. Reached the last page.")
+
+			// --- Get Table Body HTML with Retry ---
+			for attempt := 0; attempt < maxRetries; attempt++ {
+				tableBody, err = page.ElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[1]/table/tbody[2]`)
+				if err == nil {
+					break // Found the table body
+				}
+				fmt.Printf("Attempt %d: Error finding table body: %v. Retrying in %d seconds...\n", attempt+1, err, retryDelay)
+				time.Sleep(time.Duration(retryDelay) * time.Second)
+			}
+			if err != nil {
+				fmt.Printf("Error finding table body after %d attempts: %v. Skipping this page.\n", maxRetries, err)
+				// Decide how to handle: skip page, return error?
+				// For now, let's try clicking next anyway, maybe the table appears later.
+			} else {
+				// Extract HTML only if tableBody was found
+				html, err := tableBody.HTML()
+				if err != nil {
+					fmt.Printf("Error getting table body HTML: %v. Skipping this page's data.\n", err)
+				} else {
+					rawData += html
+				}
+			}
+
 			break // Exit the loop, no more pages
 		}
 
@@ -99,7 +125,6 @@ func scrapeData(url string, countryName string, regionName string) {
 		// page.MustWaitLoad() or page.MustWaitStable() with error handling
 
 		// --- Get Table Body HTML with Retry ---
-		var tableBody *rod.Element
 		for attempt := 0; attempt < maxRetries; attempt++ {
 			tableBody, err = page.ElementX(`/html/body/c-wiz/div/div[5]/div[1]/c-wiz/div/div[2]/div[1]/div[1]/div[1]/table/tbody[2]`)
 			if err == nil {
