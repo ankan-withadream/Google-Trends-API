@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func sanitizeHTML(rawhtml string) {
+func sanitizeHTML(rawhtml string) []models.TrendingItem {
 	// htmlContent := RawHTML
 	table_rows := strings.SplitN(rawhtml, "</tr>", -1)
 	fmt.Println("Rows: ", len(table_rows))
@@ -43,7 +43,8 @@ func sanitizeHTML(rawhtml string) {
 		items = append(items, currentItem)
 	}
 	fmt.Println("Items: ", items)
-	Data = append(Data, items...)
+	// Data = append(Data, items...)
+	return items
 	// jsonBytes, err := json.Marshal(items)
 	// if err != nil {
 	// 	// return "", err

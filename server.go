@@ -26,8 +26,6 @@ func main() {
 		WriteTimeout: config.APP_CONFIG.WriteTimeout,
 	}
 
-	services.AutoScrap()
-
 	go func() {
 
 		err := server.ListenAndServe()
@@ -37,5 +35,8 @@ func main() {
 		}
 	}()
 
+	go services.Autoscrap()
+
 	select {}
+
 }
