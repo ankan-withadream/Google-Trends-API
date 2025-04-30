@@ -42,7 +42,7 @@ func sanitizeHTML(rawhtml string) []models.TrendingItem {
 
 		items = append(items, currentItem)
 	}
-	fmt.Println("Items: ", items)
+	// fmt.Println("Items: ", items)
 	// Data = append(Data, items...)
 	return items
 	// jsonBytes, err := json.Marshal(items)
