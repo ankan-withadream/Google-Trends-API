@@ -61,15 +61,50 @@ func Handle_kigo(c *gin.Context) {
 }
 
 func GetGoogleTrends(c *gin.Context) {
-	// services.ExportGoogleTrends()
-	// data := services.ExtractGoogleTrends()
+	// Read the 'geo' query parameter
+	geo := c.Query("geo") // Returns "" if not present
+
+	// TODO: Use the 'geo' parameter to filter/fetch data from services
+	// For now, just printing it
+	fmt.Printf("Received geo parameter: %s\n", geo)
+
+	// services.ExportGoogleTrends() // Assuming this might need the geo param later
+	// data := services.ExtractGoogleTrends() // Assuming this might need the geo param later
 	// c.Writer.Write([]byte("Google Trends exported"))
-	data := services.Data
+	data := services.Data // This likely needs to be filtered based on 'geo'
 	// data := services.RawData
 	// data := services.RawHTML
 	// fmt.Println("Google Trends exported", data)
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": data,
+		"data": data, // Return potentially filtered data
+	})
+}
+
+func GetGoogleTrendsFiltered(c *gin.Context) {
+	// Read the request body
+	var requestBody map[string]string
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Extract the 'geo' parameter from the request body
+	geo, exists := requestBody["geo"]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'geo' parameter"})
+		return
+	}
+
+	fmt.Printf("Received geo parameter: %s\n", geo)
+
+	data := services.Data[geo]
+	if data == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No data found for the specified geo"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": data, // Return potentially filtered data
 	})
 }

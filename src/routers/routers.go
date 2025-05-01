@@ -25,7 +25,8 @@ func InitRouter() *gin.Engine {
 		apiV1Router.GET("/kigo", handlers.Handle_kigo)
 		// apiV1Router.POST("/kigo", handlers.Handle_kigo)
 
-		apiV1Router.GET("/trends", handlers.GetGoogleTrends)
+		apiV1Router.GET("/trends/:geo", handlers.GetGoogleTrends) // Changed to use path parameter
+		apiV1Router.POST("/trends", handlers.GetGoogleTrendsFiltered)
 	}
 
 	return mainRouter
